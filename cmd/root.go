@@ -12,8 +12,12 @@ import (
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "go-webscraper",
-	Short: "A CLI tool to scrape the web",
-	Long:  `This is a simple CLI tool to scrape the web and compare products, among other things...`,
+	Short: "A CLI tool to scrape the web + more",
+	Long: `This is a simple CLI tool to scrape the web and compare products, among other things...
+	
+	Additiional functions are:
+	- Password generation
+	- More to come!`,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	Run: func(cmd *cobra.Command, args []string) {},

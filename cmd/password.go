@@ -19,7 +19,9 @@ var generateCmd = &cobra.Command{
 	Long: `Generate a random password with some custom options
 	Example:
 	
-	go-webscraper generate -l 11 -d -s`,
+	go-webscraper generate -l 11 -d -s
+	
+	Could return: ?pb)xsO;a6-`,
 
 	Run: generatePassword,
 }
