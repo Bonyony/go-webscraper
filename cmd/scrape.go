@@ -5,10 +5,13 @@ package cmd
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/gocolly/colly/v2"
 	"github.com/spf13/cobra"
 )
+
+// CLI Logic
 
 // scrapeCmd represents the scrape command
 var scrapeCmd = &cobra.Command{
@@ -38,16 +41,33 @@ func init() {
 	// scrapeCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
 
+type Product struct {
+	Name   string `json:"name"`
+	Price  string `json:"price"`
+	ImgUrl string `json:"imgurl"`
+}
+
 func scrape(cmd *cobra.Command, args []string) {
-	c := colly.NewCollector()
-	// Find and visit all links
-	c.OnHTML("a", func(e *colly.HTMLElement) {
-		e.Request.Visit(e.Attr("href"))
-	})
+	c := colly.NewCollector(
+		colly.AllowedDomains("https://www.sweetwater.com"),
+	)
+
+	c.Visit("https://www.sweetwater.com/c590--Solidbody_Guitars")
 
 	c.OnRequest(func(r *colly.Request) {
 		fmt.Println("Visiting", r.URL)
 	})
 
-	c.Visit("http://go-colly.org/")
+	c.OnError(func(_ *colly.Response, err error) {
+		log.Println("Something went wrong:", err)
+	})
+
+	// Find and visit all links
+	c.OnHTML("a", func(e *colly.HTMLElement) {
+		fmt.Println(e.Request.Visit(e.Attr("href")))
+	})
+
+	c.OnScraped(func(r *colly.Response) {
+		fmt.Println("Finished", r.Request.URL)
+	})
 }
