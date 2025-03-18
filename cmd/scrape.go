@@ -4,7 +4,10 @@ Copyright © 2025 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
+	"log"
+	"strings"
 	"time"
 
 	"github.com/gocolly/colly/v2"
@@ -41,14 +44,16 @@ func init() {
 	// scrapeCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
 
-// type Product struct {
-// 	Name   string `json:"name"`
-// 	Price  string `json:"price"`
-// 	ImgUrl string `json:"imgurl"`
-// }
+type Product struct {
+	Name   string `json:"name"`
+	Price  string `json:"price"`
+	ImgUrl string `json:"imgurl"`
+}
 
 func scrape(cmd *cobra.Command, args []string) {
 	fmt.Println("Scrape command executed!")
+
+	products := make([]Product, 0)
 
 	c := colly.NewCollector(
 		colly.AllowedDomains("www.musiciansfriend.com"),
@@ -81,16 +86,39 @@ func scrape(cmd *cobra.Command, args []string) {
 	})
 
 	// Find and visit all links
-	c.OnHTML("a[href]", func(e *colly.HTMLElement) {
-		link := e.Attr("href")
-		// Print Link
-		fmt.Printf("Link found: %q -> %s\n", e.Text, link)
-		c.Visit(e.Request.AbsoluteURL(link))
+	c.OnHTML("div.product-card", func(e *colly.HTMLElement) {
+		fmt.Println("Found a product-card div!")
+		card, err := e.DOM.Html()
+		if err != nil {
+			fmt.Println("Error extracting the HTML")
+			return
+		}
+		fmt.Println("Scraped card HTML:\n", card)
+
+		product := Product{
+			Name:   e.ChildText("a.ui-link"),
+			Price:  e.ChildText(".sale-price"),
+			ImgUrl: e.ChildAttr("img", "src"),
+		}
+
+		// combats lazy loading
+		if !strings.Contains(product.ImgUrl, "https") {
+			product.ImgUrl = e.ChildAttr("img", "data-src")
+		}
+		products = append(products, product)
 	})
 
 	err := c.Visit("https://www.musiciansfriend.com/electric-guitars")
+	// used for testing, wikipedia always works...
 	// err := c.Visit("https://en.wikipedia.org/")
 	if err != nil {
 		fmt.Println("Colly error:", err)
 	}
+
+	jsonData, err := json.MarshalIndent(products, "", " ")
+	if err != nil {
+		log.Fatal("Error marshalling JSON:", err)
+	}
+
+	fmt.Println(string(jsonData))
 }
