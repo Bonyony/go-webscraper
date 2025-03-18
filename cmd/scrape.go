@@ -5,6 +5,7 @@ package cmd
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/gocolly/colly/v2"
 	"github.com/spf13/cobra"
@@ -50,13 +51,20 @@ func scrape(cmd *cobra.Command, args []string) {
 	fmt.Println("Scrape command executed!")
 
 	c := colly.NewCollector(
-		// colly.AllowedDomains("www.sweetwater.com"),
+		colly.AllowedDomains("www.musiciansfriend.com"),
 		colly.MaxDepth(1),
 	)
 
+	c.Limit(&colly.LimitRule{
+		DomainGlob:  "*musiciansfriend.com",
+		RandomDelay: 1 * time.Second,
+	})
+
+	// detailCollector := c.Clone()
+
 	c.OnRequest(func(r *colly.Request) {
 		// These lines pretends to be an internet browser to bypass limiting
-		r.Headers.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+		r.Headers.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36")
 		r.Headers.Set("Accept-Language", "en-US,en;q=0.9")
 		r.Headers.Set("Referer", "https://www.google.com/")
 		r.Headers.Set("DNT", "1") // Do Not Track
@@ -77,11 +85,11 @@ func scrape(cmd *cobra.Command, args []string) {
 		link := e.Attr("href")
 		// Print Link
 		fmt.Printf("Link found: %q -> %s\n", e.Text, link)
-		// c.Visit(e.Request.AbsoluteURL(link))
+		c.Visit(e.Request.AbsoluteURL(link))
 	})
 
-	// err := c.Visit("https://www.sweetwater.com/")
-	err := c.Visit("https://en.wikipedia.org/")
+	err := c.Visit("https://www.musiciansfriend.com/electric-guitars")
+	// err := c.Visit("https://en.wikipedia.org/")
 	if err != nil {
 		fmt.Println("Colly error:", err)
 	}
