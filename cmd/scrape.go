@@ -26,22 +26,20 @@ var scrapeCmd = &cobra.Command{
 	
 	go-webscraper scrape
 	
-	Could return: 'Chumbus Wumbus or Grumpus Grumbus!'`,
+	Could return: 'Chumbus Wumbus or Grumpus Grumbus!'
+	{
+		"name": "Fender Player II Stratocaster HSS Rosewood Fingerboard...",
+		"price": "$649.99",
+		"imgurl": "https://media.musiciansfriend.com/is/image/MMGS7/Player-II-Stratocaster-HSS-Rosewood-Fingerboard-Limited-Edition-Electric-Guitar-Candy-Red-Burst/M11732000001000-00-400x400.jpg"
+	},`,
+
 	Run: scrape,
 }
 
 func init() {
 	rootCmd.AddCommand(scrapeCmd)
 
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// scrapeCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// scrapeCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	scrapeCmd.Flags().BoolP("musicians-friend", "m", false, "Include Musiciansfriend to be scraped")
 }
 
 type Product struct {
@@ -53,6 +51,14 @@ type Product struct {
 func scrape(cmd *cobra.Command, args []string) {
 	fmt.Println("Scrape command executed!")
 
+	isMusiciansFriend, _ := cmd.Flags().GetBool("musicians-friend")
+
+	if isMusiciansFriend {
+		scrapeMusiciansFriend()
+	}
+}
+
+func scrapeMusiciansFriend() {
 	products := make([]Product, 0)
 
 	c := colly.NewCollector(
@@ -64,8 +70,6 @@ func scrape(cmd *cobra.Command, args []string) {
 		DomainGlob:  "*musiciansfriend.com",
 		RandomDelay: 1 * time.Second,
 	})
-
-	// detailCollector := c.Clone()
 
 	c.OnRequest(func(r *colly.Request) {
 		// These lines pretends to be an internet browser to bypass limiting
@@ -101,7 +105,7 @@ func scrape(cmd *cobra.Command, args []string) {
 			ImgUrl: e.ChildAttr("img", "src"),
 		}
 
-		// combats lazy loading
+		// combats lazy loading of product images
 		if !strings.Contains(product.ImgUrl, "https") {
 			product.ImgUrl = e.ChildAttr("img", "data-src")
 		}
@@ -109,8 +113,6 @@ func scrape(cmd *cobra.Command, args []string) {
 	})
 
 	err := c.Visit("https://www.musiciansfriend.com/electric-guitars")
-	// used for testing, wikipedia always works...
-	// err := c.Visit("https://en.wikipedia.org/")
 	if err != nil {
 		fmt.Println("Colly error:", err)
 	}
