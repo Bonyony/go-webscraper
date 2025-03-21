@@ -17,6 +17,7 @@ var rootCmd = &cobra.Command{
 	
 	Additiional functions are:
 	- Password generation
+	- Scrape the Musiciansfriend website for product info
 	- More to come!`,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:

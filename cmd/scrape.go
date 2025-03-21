@@ -22,6 +22,11 @@ var scrapeCmd = &cobra.Command{
 	Use:   "scrape",
 	Short: "Scrape a website of your choice",
 	Long: `Scrape a website of your choice.
+
+	Current entrypoints are:
+		"https://www.musiciansfriend.com/sitemap"
+		"https://reverb.com/sitemaps/sitemap.xml.gz"
+
 	
 	Example:
 	
@@ -41,6 +46,7 @@ func init() {
 	rootCmd.AddCommand(scrapeCmd)
 
 	scrapeCmd.Flags().BoolP("musicians-friend", "m", false, "Include Musiciansfriend to be scraped")
+	scrapeCmd.Flags().BoolP("reverb", "r", false, "Include Reverb to be scraped")
 }
 
 type Product struct {
@@ -56,9 +62,14 @@ func scrape(cmd *cobra.Command, args []string) {
 	fmt.Println("Scrape command executed!")
 
 	isMusiciansFriend, _ := cmd.Flags().GetBool("musicians-friend")
+	isReverb, _ := cmd.Flags().GetBool("reverb")
 
+	// need to rework logic here so that flag order is respected
 	if isMusiciansFriend {
 		scrapeMusiciansFriendSitemap()
+	}
+	if isReverb {
+		scrapeReverbSitemap()
 	}
 }
 
@@ -215,7 +226,12 @@ func scrapeMusiciansFriendProducts(subCategoryUrl string) {
 		log.Fatal("Error marshalling JSON:", err)
 	}
 
-	fmt.Println(string(jsonData))
+	if len(products) == 0 {
+		fmt.Println("No product cards on this page. Visit this URL to see what is offered here:", subCategoryUrl)
+	} else {
+		fmt.Println(string(jsonData))
+	}
+
 }
 
 // Prompts the user to input a number corresponding to available choices (takes in a map of strings)
@@ -256,4 +272,48 @@ func chooseOptionFromList(options []string, callback func(string)) {
 	} else {
 		fmt.Println("Invalid choice.")
 	}
+}
+
+func scrapeReverbSitemap() {
+	c := colly.NewCollector()
+
+	c.Limit(&colly.LimitRule{
+		RandomDelay: 1 * time.Second,
+	})
+
+	c.OnRequest(func(r *colly.Request) {
+		// These lines pretends to be an internet browser to bypass limiting
+		r.Headers.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36")
+		r.Headers.Set("Accept-Language", "en-US,en;q=0.9")
+		r.Headers.Set("Referer", "https://www.google.com/")
+		r.Headers.Set("DNT", "1") // Do Not Track
+		r.Headers.Set("Connection", "keep-alive")
+		fmt.Println("Visiting", r.URL.String())
+	})
+
+	c.OnError(func(r *colly.Response, err error) {
+		fmt.Printf("Status Code %v Error on %s: %s\n", r.StatusCode, r.Request.URL, err)
+		fmt.Println("Response Headers")
+		for key, value := range *r.Headers {
+			fmt.Printf(" %s: %s\n", key, value)
+		}
+	})
+
+	var urlList []string
+
+	c.OnXML("//url/loc", func(x *colly.XMLElement) {
+		url := x.Text
+		if url != "" {
+			urlList = append(urlList, url)
+		}
+	})
+
+	err := c.Visit("https://reverb.com/sitemaps/sitemap.xml.gz")
+	if err != nil {
+		log.Fatal("Error scraping sitemap:", err)
+	}
+
+	fmt.Println("\nChoose a link to visit:")
+	chooseOptionFromList(urlList, func(s string) {})
+
 }
