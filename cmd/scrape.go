@@ -274,6 +274,18 @@ func chooseOptionFromList(options []string, callback func(string)) {
 	}
 }
 
+func chooseAlphabetInput(options []string, callback func(string)) {
+	// gather alphabetic input
+	var choice rune
+	fmt.Print("Enter a letter to see available brands: ")
+	fmt.Scan(&choice)
+
+	// ensure it matches available choices
+
+	// invoke callback function to go on to next scraping step
+
+}
+
 func scrapeReverbSitemap() {
 	c := colly.NewCollector()
 
@@ -314,6 +326,55 @@ func scrapeReverbSitemap() {
 	}
 
 	fmt.Println("\nChoose a link to visit:")
-	chooseOptionFromList(urlList, func(s string) {})
+	chooseOptionFromList(urlList, func(s string) {
+		fmt.Println("Coming soon")
+	})
 
+}
+
+func scrapeReverbBrands(category string) {
+	c := colly.NewCollector()
+
+	c.Limit(&colly.LimitRule{
+		RandomDelay: 1 * time.Second,
+	})
+
+	c.OnRequest(func(r *colly.Request) {
+		// These lines pretends to be an internet browser to bypass limiting
+		r.Headers.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36")
+		r.Headers.Set("Accept-Language", "en-US,en;q=0.9")
+		r.Headers.Set("Referer", "https://www.google.com/")
+		r.Headers.Set("DNT", "1") // Do Not Track
+		r.Headers.Set("Connection", "keep-alive")
+		fmt.Println("Visiting", r.URL.String())
+	})
+
+	c.OnError(func(r *colly.Response, err error) {
+		fmt.Printf("Status Code %v Error on %s: %s\n", r.StatusCode, r.Request.URL, err)
+		fmt.Println("Response Headers")
+		for key, value := range *r.Headers {
+			fmt.Printf(" %s: %s\n", key, value)
+		}
+	})
+
+	var categories = make(map[string]string)
+
+	c.OnHTML("h4.brands-index__all-brands__heading", func(e *colly.HTMLElement) {
+		sectionTitle := e.Text
+		if sectionTitle == category {
+			e.DOM.Next().Find("li a").Each(func(i int, s *goquery.Selection) {
+				brandName := s.Text()
+				brandUrl, _ := s.Attr("href")
+
+				if brandName != "" && brandUrl != "" {
+					categories[brandName] = e.Request.AbsoluteURL(brandUrl)
+				}
+			})
+		}
+	})
+
+	err := c.Visit("https://reverb.com/brands")
+	if err != nil {
+		log.Fatal("Error scraping sitemap:", err)
+	}
 }
