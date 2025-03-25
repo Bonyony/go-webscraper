@@ -281,7 +281,6 @@ func chooseOptionFromList(options []string, callback func(string)) {
 }
 
 func chooseAlphabetInput(alphabetOptions []string, callback func(string)) {
-	// gather alphabetic input
 	var choice string
 	fmt.Print("Enter the first letter of which brands you want to see: ")
 	_, err := fmt.Scanf("%c", &choice)
@@ -345,11 +344,11 @@ func scrapeReverbSitemap() {
 	}
 
 	fmt.Println("\nChoose a link to visit:")
-	chooseOptionFromList(urlList, scrapeReverbBrands)
+	chooseOptionFromList(urlList, scrapeReverbSubLink)
 
 }
 
-func scrapeReverbBrands(category string) {
+func scrapeReverbSubLink(category string) {
 	c := colly.NewCollector()
 
 	c.Limit(&colly.LimitRule{
@@ -361,7 +360,7 @@ func scrapeReverbBrands(category string) {
 		r.Headers.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36")
 		r.Headers.Set("Accept-Language", "en-US,en;q=0.9")
 		r.Headers.Set("Referer", "https://www.google.com/")
-		r.Headers.Set("DNT", "1") // Do Not Track
+		// r.Headers.Set("DNT", "1") // Do Not Track
 		r.Headers.Set("Connection", "keep-alive")
 		fmt.Println("Visiting", r.URL.String())
 	})
@@ -374,24 +373,15 @@ func scrapeReverbBrands(category string) {
 		}
 	})
 
-	var categories = make(map[string]string)
+	// var categories = make(map[string]string)
 
-	c.OnHTML("h4.brands-index__all-brands__heading", func(e *colly.HTMLElement) {
+	c.OnHTML("h1", func(e *colly.HTMLElement) {
 		sectionTitle := e.Text
-		if sectionTitle == category {
-			e.DOM.Next().Find("li a").Each(func(i int, s *goquery.Selection) {
-				brandName := s.Text()
-				brandUrl, _ := s.Attr("href")
-
-				if brandName != "" && brandUrl != "" {
-					categories[brandName] = e.Request.AbsoluteURL(brandUrl)
-				}
-			})
-		}
+		fmt.Println(sectionTitle)
 	})
-	fmt.Print(categories)
+	// fmt.Print(categories)
 
-	err := c.Visit("https://reverb.com/brands")
+	err := c.Visit(category)
 	if err != nil {
 		log.Fatal("Error scraping sitemap:", err)
 	}
