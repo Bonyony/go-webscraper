@@ -55,6 +55,12 @@ type Product struct {
 	ImgUrl string `json:"imgurl"`
 }
 
+// Options for user inputs that are character based
+var alphabetOptions = []string{
+	"A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M",
+	"N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z",
+}
+
 // maps key value pairs of category names and links
 // var categories = make(map[string]string)
 
@@ -274,15 +280,28 @@ func chooseOptionFromList(options []string, callback func(string)) {
 	}
 }
 
-func chooseAlphabetInput(options []string, callback func(string)) {
+func chooseAlphabetInput(alphabetOptions []string, callback func(string)) {
 	// gather alphabetic input
-	var choice rune
-	fmt.Print("Enter a letter to see available brands: ")
-	fmt.Scan(&choice)
+	var choice string
+	fmt.Print("Enter the first letter of which brands you want to see: ")
+	_, err := fmt.Scanf("%c", &choice)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	choice = strings.ToUpper(choice)
+
+	fmt.Printf("Read character: %s - ", choice)
 
 	// ensure it matches available choices
-
-	// invoke callback function to go on to next scraping step
+	for i, char := range alphabetOptions {
+		if choice == char {
+			// invoke callback function to go on to next scraping step
+			callback(alphabetOptions[i-1])
+			return
+		}
+	}
+	fmt.Println("Invalid input, enter a letter between A and Z!")
 
 }
 
@@ -326,9 +345,7 @@ func scrapeReverbSitemap() {
 	}
 
 	fmt.Println("\nChoose a link to visit:")
-	chooseOptionFromList(urlList, func(s string) {
-		fmt.Println("Coming soon")
-	})
+	chooseOptionFromList(urlList, scrapeReverbBrands)
 
 }
 
@@ -372,9 +389,13 @@ func scrapeReverbBrands(category string) {
 			})
 		}
 	})
+	fmt.Print(categories)
 
 	err := c.Visit("https://reverb.com/brands")
 	if err != nil {
 		log.Fatal("Error scraping sitemap:", err)
 	}
+
+	fmt.Println("\nChoose a category:")
+	// chooseAlphabetInput(categories, func(s string) { fmt.Print("Working...\n") })
 }
