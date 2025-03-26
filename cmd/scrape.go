@@ -61,6 +61,10 @@ var alphabetOptions = []string{
 	"N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z",
 }
 
+var yesNoOptions = [2]string{
+	"Yes", "No",
+}
+
 // maps key value pairs of category names and links
 // var categories = make(map[string]string)
 
@@ -236,6 +240,8 @@ func scrapeMusiciansFriendProducts(subCategoryUrl string) {
 		fmt.Println("No product cards on this page. Visit this URL to see what is offered here:", subCategoryUrl)
 	} else {
 		fmt.Println(string(jsonData))
+		fmt.Print("\nThese are the best matches for this category.\nWould you like to download this data to a .csv file?\n")
+		chooseOptionFromList(yesNoOptions[:], func(choice string) {})
 	}
 
 }
@@ -280,10 +286,10 @@ func chooseOptionFromList(options []string, callback func(string)) {
 	}
 }
 
-func chooseAlphabetInput(alphabetOptions []string, callback func(string)) {
+func chooseAlphabetInput(options []string, callback func(string)) {
 	var choice string
-	fmt.Print("Enter the first letter of which brands you want to see: ")
-	_, err := fmt.Scanf("%c", &choice)
+	// fmt.Print("Enter the first letter of which brands you want to see: ")
+	_, err := fmt.Scanf("%s", &choice)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -293,10 +299,10 @@ func chooseAlphabetInput(alphabetOptions []string, callback func(string)) {
 	fmt.Printf("Read character: %s - ", choice)
 
 	// ensure it matches available choices
-	for i, char := range alphabetOptions {
+	for i, char := range options {
 		if choice == char {
 			// invoke callback function to go on to next scraping step
-			callback(alphabetOptions[i-1])
+			callback(options[i-1])
 			return
 		}
 	}

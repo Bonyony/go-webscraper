@@ -18,7 +18,24 @@ var rootCmd = &cobra.Command{
 	Additiional functions are:
 	- Password generation
 	- Scrape the Musiciansfriend website for product info
-	- More to come!`,
+	- More to come!
+	
+	Made by:
+	 _____  ____    ____  ____   __  _                    
+	|     ||    \  /    T|    \ |  l/ ]                   
+	|   __j|  D  )Y  o  ||  _  Y|  ' /                    
+	|  l_  |    / |     ||  |  ||    \                    
+	|   _] |    \ |  _  ||  |  ||     Y                   
+	|  T   |  .  Y|  |  ||  |  ||  .  |                   
+	l__j   l__j\_jl__j__jl__j__jl__j\_j                   
+                                                              
+	 _____  ____    ____  ____      __  ____   ___   ____     ___ 
+	|     ||    \  /    T|    \    /  ]l    j /   \ |    \   /  _]
+	|   __j|  D  )Y  o  ||  _  Y  /  /  |  T Y     Y|  _  Y /  [_ 
+	|  l_  |    / |     ||  |  | /  /   |  | |  O  ||  |  |Y    _]
+	|   _] |    \ |  _  ||  |  |/   \_  |  | |     ||  |  ||   [_ 
+	|  T   |  .  Y|  |  ||  |  |\     | j  l l     !|  |  ||     T
+	l__j   l__j\_jl__j__jl__j__j \____j|____j \___/ l__j__jl_____j`,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	Run: func(cmd *cobra.Command, args []string) {},
