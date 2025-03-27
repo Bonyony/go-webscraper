@@ -9,6 +9,8 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"os"
+	"text/tabwriter"
 
 	"github.com/spf13/cobra"
 )
@@ -17,9 +19,17 @@ import (
 var traceCmd = &cobra.Command{
 	Use:   "trace",
 	Short: "Trace an IP address of your choice",
-	Long: `Trace an IP of your choice. A potential return would look like: 
+	Long: `Trace an IP of your choice. You can enter as many IPs as you want. 
 
-Chumble Wumble`,
+go-webscraper trace 1.1.1.1, 2.2.2.2, 5.5.5.5
+
+Would output:
+
+IP        |CITY      |COUNTRY   |REGION      |LOCATION           |TIMEZONE            |POSTAL
+1.1.1.1   |Brisbane  |AU        |Queensland  |-27.4820,153.0136  |Australia/Brisbane  |4101
+2.2.2.2   |Latham    |US        |New York    |42.7470,-73.7590   |America/New_York    |12110
+5.5.5.5   |Delhi     |IN        |Delhi       |28.6519,77.2315    |Asia/Kolkata        |110001
+`,
 	Run: traceIP,
 }
 
@@ -52,18 +62,24 @@ type IP struct {
 }
 
 func traceIP(cmd *cobra.Command, args []string) {
-	fmt.Println("trace command called!")
-
-	if len(args) > 0 {
-		for _, ip := range args {
-			showData(ip)
-		}
-	} else {
+	if len(args) == 0 {
 		fmt.Println("Please provide an IP to trace.")
+		return
 	}
+
+	// setup for the tabwriter
+	w := tabwriter.NewWriter(os.Stdout, 10, 0, 2, ' ', tabwriter.Debug)
+	fmt.Fprintln(w, "\nIP\tCITY\tCOUNTRY\tREGION\tLOCATION\tTIMEZONE\tPOSTAL")
+
+	for _, ip := range args {
+		showData(w, ip)
+	}
+
+	// Outputs the writer
+	w.Flush()
 }
 
-func showData(ip string) {
+func showData(w *tabwriter.Writer, ip string) {
 	url := "http://ipinfo.io/" + ip + "/geo"
 	responseByte := getData(url)
 
@@ -72,11 +88,10 @@ func showData(ip string) {
 	err := json.Unmarshal(responseByte, &data)
 	if err != nil {
 		log.Println("Unable to unmarshal the response")
+		return
 	}
 
-	fmt.Println("DATA FOUND: ")
-	fmt.Printf("IP: %s\nCITY: %s\nCOUNTRY: %s\nREGION: %s\nLOCATION: %s\nTIMEZONE: %s\nPOSTAL: %s\n", data.IP, data.City, data.Country, data.Region, data.Loc, data.Timezone, data.Postal)
-
+	fmt.Fprint(w, data.IP, "\t", data.City, "\t", data.Country, "\t", data.Region, "\t", data.Loc, "\t", data.Timezone, "\t", data.Postal, "\n")
 }
 
 func getData(url string) []byte {
@@ -84,6 +99,11 @@ func getData(url string) []byte {
 	res, err := http.Get(url)
 	if err != nil {
 		log.Println("Unable to get the response")
+	}
+
+	// 200 should be the only response wanted
+	if res.StatusCode != 200 {
+		log.Println("Bad response:", res.StatusCode)
 	}
 
 	resByte, err := io.ReadAll(res.Body)
