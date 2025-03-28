@@ -15,10 +15,10 @@ var rootCmd = &cobra.Command{
 	Short: "A CLI tool to scrape the web + more",
 	Long: `This is a simple CLI tool to scrape the web and compare products, among other things...
 	
-	Additiional functions are:
-	- Password generation: 'generate'
+	Current functions are:
 	- Scrape the Musiciansfriend website for product info: 'scrape'
 	- Trace IP addresses: 'trace'
+	- Password generation: 'generate'
 	- More to come!
 	
 	Made by:

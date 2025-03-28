@@ -21,7 +21,7 @@ var traceCmd = &cobra.Command{
 	Short: "Trace an IP address of your choice",
 	Long: `Trace an IP of your choice. You can enter as many IPs as you want. 
 
-go-webscraper trace 1.1.1.1, 2.2.2.2, 5.5.5.5
+go-webscraper trace 1.1.1.1 2.2.2.2 5.5.5.5
 
 Would output:
 
