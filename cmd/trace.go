@@ -103,7 +103,7 @@ func getData(url string) []byte {
 
 	// 200 should be the only response wanted
 	if res.StatusCode != 200 {
-		log.Println("Bad response:", res.StatusCode)
+		log.Println("Bad response:", res.StatusCode, res.Request.URL)
 	}
 
 	resByte, err := io.ReadAll(res.Body)
