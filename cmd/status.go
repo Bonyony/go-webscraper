@@ -2,6 +2,8 @@ package cmd
 
 import (
 	"fmt"
+	"log"
+	"net/url"
 
 	"github.com/spf13/cobra"
 )
@@ -9,6 +11,7 @@ import (
 /*
 	This command establishes a connection with a website and
 	then checks its status (Online or Offline via TCP)
+	It will also check if a domain has a valid email, etc.
 */
 
 var statusCmd = &cobra.Command{
@@ -30,11 +33,22 @@ func init() {
 
 func findStatus(cmd *cobra.Command, args []string) {
 	if len(args) == 0 {
-		fmt.Println("Please provide a URL to check the status of.")
+		fmt.Println("Please provide a URL to check the status of as an argument.\nExample: go-webscraper status https://www.google.com")
 		return
 	}
 
-	for _, url := range args {
-		fmt.Println(url)
+	for _, domain := range args {
+		getStatus(domain)
 	}
+}
+
+func getStatus(domain string) {
+	fmt.Println("Hello", domain)
+
+	u, err := url.Parse(domain)
+	if err != nil {
+		log.Println("Unable to parse rawURL:", err)
+	}
+
+	fmt.Println(u.Scheme)
 }
