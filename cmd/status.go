@@ -43,12 +43,11 @@ func findStatus(cmd *cobra.Command, args []string) {
 }
 
 func getStatus(domain string) {
-	fmt.Println("Hello", domain)
-
 	u, err := url.Parse(domain)
 	if err != nil {
 		log.Println("Unable to parse rawURL:", err)
+		return
 	}
 
-	fmt.Println(u.Scheme)
+	fmt.Println("Scheme:", u.Scheme, "Host:", u.Host, "Path:", u.Path)
 }

@@ -56,10 +56,10 @@ type Product struct {
 }
 
 // Options for user inputs that are character based
-var alphabetOptions = []string{
-	"A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M",
-	"N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z",
-}
+// var alphabetOptions = []string{
+// 	"A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M",
+// 	"N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z",
+// }
 
 var yesNoOptions = [2]string{
 	"Yes", "No",
