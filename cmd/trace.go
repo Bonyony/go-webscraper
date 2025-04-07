@@ -8,9 +8,11 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"net"
 	"net/http"
 	"os"
 	"text/tabwriter"
+	"time"
 
 	"github.com/spf13/cobra"
 )
@@ -35,6 +37,8 @@ IP        |CITY      |COUNTRY   |REGION      |LOCATION           |TIMEZONE      
 
 func init() {
 	rootCmd.AddCommand(traceCmd)
+
+	traceCmd.Flags().BoolP("scan-port", "s", false, "Scan the IP address for open ports")
 }
 
 // sample response for 1.1.1.1
@@ -62,6 +66,8 @@ type IP struct {
 }
 
 func traceIP(cmd *cobra.Command, args []string) {
+	isScan, _ := cmd.Flags().GetBool("scan-port")
+
 	if len(args) == 0 {
 		fmt.Println("Please provide an IP to trace.")
 		return
@@ -73,6 +79,9 @@ func traceIP(cmd *cobra.Command, args []string) {
 
 	for _, ip := range args {
 		showData(w, ip)
+		if isScan {
+			scanPorts(w, ip)
+		}
 	}
 
 	// Outputs the writer
@@ -112,4 +121,37 @@ func getData(url string) []byte {
 	}
 
 	return resByte
+}
+
+func scanPorts(w *tabwriter.Writer, ip string) {
+	topPorts := []int{80, 22, 443, 3306, 3389, 21, 23, 8080, 8443, 53, 25}
+	services := map[int]string{
+		22:   "SSH",
+		80:   "HTTP",
+		443:  "HTTPS",
+		3306: "MySQL",
+		3389: "RDP",
+		21:   "FTP",
+		23:   "Telnet",
+		8080: "Alt HTTP",
+		8443: "Alt HTTPS",
+		53:   "DNS",
+		25:   "SMTP",
+	}
+
+	fmt.Fprintln(w, "\nPORT\tSERVICE\tSTATUS")
+	for _, port := range topPorts {
+		target := fmt.Sprintf("%s:%d", ip, port)
+
+		conn, err := net.DialTimeout("tcp", target, 2*time.Second)
+		if err != nil {
+			fmt.Fprintf(w, "%d\t%s\tClosed\n", port, services[port])
+			continue
+		}
+
+		fmt.Fprintf(w, "%d\t%s\tOpen\n", port, services[port])
+
+		conn.Close()
+	}
+	w.Flush()
 }
