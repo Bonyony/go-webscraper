@@ -39,6 +39,7 @@ func init() {
 	rootCmd.AddCommand(traceCmd)
 
 	traceCmd.Flags().BoolP("scan-port", "s", false, "Scan the IP address for open ports")
+	traceCmd.Flags().IntVarP(&timeout, "timeout", "t", 1000, "Timeout of the port-scan in milliseconds")
 }
 
 // sample response for 1.1.1.1
@@ -64,6 +65,8 @@ type IP struct {
 	Timezone string `json:"timezone"`
 	Postal   string `json:"postal"`
 }
+
+var timeout int
 
 func traceIP(cmd *cobra.Command, args []string) {
 	isScan, _ := cmd.Flags().GetBool("scan-port")
@@ -124,6 +127,8 @@ func getData(url string) []byte {
 }
 
 func scanPorts(w *tabwriter.Writer, ip string) {
+	// These are the top ports and their corresponding services.
+	// The longest iteration through the ports (if none workd) is ~20 seconds
 	topPorts := []int{80, 22, 443, 3306, 3389, 21, 23, 8080, 8443, 53, 25}
 	services := map[int]string{
 		22:   "SSH",
@@ -143,7 +148,7 @@ func scanPorts(w *tabwriter.Writer, ip string) {
 	for _, port := range topPorts {
 		target := fmt.Sprintf("%s:%d", ip, port)
 
-		conn, err := net.DialTimeout("tcp", target, 2*time.Second)
+		conn, err := net.DialTimeout("tcp", target, time.Duration(timeout)*time.Millisecond)
 		if err != nil {
 			fmt.Fprintf(w, "%d\t%s\tClosed\n", port, services[port])
 			continue
