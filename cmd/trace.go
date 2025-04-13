@@ -40,6 +40,7 @@ func init() {
 
 	traceCmd.Flags().BoolP("scan-port", "s", false, "Scan the IP address for open ports")
 	traceCmd.Flags().IntVarP(&timeout, "timeout", "t", 1000, "Timeout of the port-scan in milliseconds")
+	traceCmd.Flags().BoolP("dns-lookup", "d", false, "Check the DNS PTR of the IP Address")
 }
 
 // sample response for 1.1.1.1
@@ -70,6 +71,7 @@ var timeout int
 
 func traceIP(cmd *cobra.Command, args []string) {
 	isScan, _ := cmd.Flags().GetBool("scan-port")
+	isLookup, _ := cmd.Flags().GetBool("dns-lookup")
 
 	if len(args) == 0 {
 		fmt.Println("Please provide an IP to trace.")
@@ -84,6 +86,9 @@ func traceIP(cmd *cobra.Command, args []string) {
 		showData(w, ip)
 		if isScan {
 			scanPorts(w, ip)
+		}
+		if isLookup {
+			dnsLookup(w, ip)
 		}
 	}
 
@@ -158,5 +163,32 @@ func scanPorts(w *tabwriter.Writer, ip string) {
 
 		conn.Close()
 	}
+	w.Flush()
+}
+
+func dnsLookup(w *tabwriter.Writer, ip string) {
+	fmt.Fprintln(w, "\nDNS PTR\tHTTPS STATUS")
+
+	addrs, err := net.LookupAddr(ip)
+	if err != nil {
+		fmt.Printf("Reverse lookup failed for %s: %v\n", ip, err)
+		return
+	} else {
+		for _, addr := range addrs {
+			fmt.Println("DNS PTR Record:", addr)
+		}
+	}
+
+	client := http.Client{Timeout: time.Duration(timeout) * time.Millisecond}
+
+	res, err := client.Get("https://" + ip)
+	if err != nil {
+		fmt.Println("Not accessible via HTTPS:", err)
+		return
+	}
+	defer res.Body.Close()
+
+	fmt.Println("HTTPS response status:", res.Status)
+	// tabwriter still needs to implemented correctly
 	w.Flush()
 }
