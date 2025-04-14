@@ -18,6 +18,7 @@ var rootCmd = &cobra.Command{
 	Current functions are:
 	- Scrape the Musiciansfriend website for product info: 'scrape'
 	- Trace IP addresses: 'trace'
+	- Find out more about a web URL: 'status'
 	- Password generation: 'generate'
 	- More to come!
 	

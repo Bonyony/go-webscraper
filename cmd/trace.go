@@ -83,6 +83,9 @@ func traceIP(cmd *cobra.Command, args []string) {
 	fmt.Fprintln(w, "\nIP\tCITY\tCOUNTRY\tREGION\tLOCATION\tTIMEZONE\tPOSTAL")
 
 	for _, ip := range args {
+		if isScan || isLookup {
+			fmt.Println("RESULTS FOR QUERY:", ip)
+		}
 		showData(w, ip)
 		if isScan {
 			scanPorts(w, ip)
@@ -91,7 +94,6 @@ func traceIP(cmd *cobra.Command, args []string) {
 			dnsLookup(w, ip)
 		}
 	}
-
 	// Outputs the writer
 	w.Flush()
 }
@@ -167,15 +169,14 @@ func scanPorts(w *tabwriter.Writer, ip string) {
 }
 
 func dnsLookup(w *tabwriter.Writer, ip string) {
-	fmt.Fprintln(w, "\nDNS PTR\tHTTPS STATUS")
 
 	addrs, err := net.LookupAddr(ip)
 	if err != nil {
-		fmt.Printf("Reverse lookup failed for %s: %v\n", ip, err)
+		fmt.Printf("\nReverse lookup failed for %s: %v\n\n", ip, err)
 		return
 	} else {
 		for _, addr := range addrs {
-			fmt.Println("DNS PTR Record:", addr)
+			fmt.Println("\nDNS PTR Record:", addr)
 		}
 	}
 
@@ -183,12 +184,12 @@ func dnsLookup(w *tabwriter.Writer, ip string) {
 
 	res, err := client.Get("https://" + ip)
 	if err != nil {
-		fmt.Println("Not accessible via HTTPS:", err)
+		fmt.Printf("Not accessible via HTTPS: %e\n\n", err)
 		return
 	}
 	defer res.Body.Close()
 
-	fmt.Println("HTTPS response status:", res.Status)
+	fmt.Printf("HTTPS response status: %v\n\n", res.Status)
 	// tabwriter still needs to implemented correctly
 	w.Flush()
 }
