@@ -8,7 +8,7 @@ Ostensibly a webscraper CLI tool, I might just add some silly little features in
 
 Ensure you have the following installed on your system:
 
-- Go (1.18 or later)
+- Go (1.18 or later; possibly 1.22)
 - Git (for cloning the repository)
 
 ### Clone the Repository
@@ -62,5 +62,7 @@ go run main.go [command] [flag]
 
 ## Features
 
-- Scrape music sites on the web!
-- Simple password generator
+- Trace IPv4 addresses to find information on their geolocation, the DNS PTR, and open ports.
+- Check the status of a website, the IPv4 + IPv6 adresses, and parse the URL.
+- Scrape musical instrument sites on the web!
+- Simple password generator.
