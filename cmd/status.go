@@ -6,7 +6,8 @@ import (
 	"net"
 	"net/http"
 	"net/url"
-	"strings"
+
+	"github.com/Bonyony/go-webscraper/util"
 
 	"github.com/spf13/cobra"
 )
@@ -60,11 +61,14 @@ func findStatus(cmd *cobra.Command, args []string) {
 	}
 
 	for _, domain := range args {
+		fmt.Println()
 		visitDomain(domain)
 		if isParse {
+			fmt.Println()
 			parseURL(domain)
 		}
 		if isLookup {
+			fmt.Println()
 			lookupIP(domain)
 		}
 	}
@@ -72,7 +76,7 @@ func findStatus(cmd *cobra.Command, args []string) {
 }
 
 func visitDomain(domain string) {
-	cleanedURL := NormalizeURL(domain)
+	cleanedURL := util.NormalizeURL(domain)
 
 	res, err := http.Get(cleanedURL)
 	if err != nil {
@@ -87,7 +91,7 @@ func visitDomain(domain string) {
 }
 
 func parseURL(domain string) {
-	cleanedURL := NormalizeURL(domain)
+	cleanedURL := util.NormalizeURL(domain)
 	u, err := url.Parse(cleanedURL)
 	if err != nil {
 		log.Println("Unable to parse rawURL:", err)
@@ -112,12 +116,4 @@ func lookupIP(domain string) {
 			fmt.Println("IPv6:", ip)
 		}
 	}
-}
-
-// ensures a URL contains "https://"
-func NormalizeURL(domain string) string {
-	if !strings.HasPrefix(domain, "http://") && !strings.HasPrefix(domain, "https://") {
-		return "https://" + domain
-	}
-	return domain
 }
