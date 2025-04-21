@@ -62,7 +62,8 @@ go run main.go [command] [flag]
 
 ## Features
 
-- Trace IPv4 addresses to find information on their geolocation, the DNS PTR, and open ports.
-- Check the status of a website, the IPv4 + IPv6 adresses, and parse the URL.
-- Scrape musical instrument sites on the web!
-- Simple password generator.
+- Trace IPv4 addresses to find information on their geolocation, the DNS PTR, and open ports. (trace)
+- See the DNS records of a website (IP addresses, MX, NS, TXT data). (dns)
+- Check the status of a website, the IPv4 + IPv6 adresses, and parse the URL. (status)
+- Scrape musical instrument sites on the web! (scrape)
+- Simple password generator. (generate)
