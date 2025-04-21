@@ -18,11 +18,21 @@ var dnsCmd = &cobra.Command{
 	Use:   "dns",
 	Short: "Check the DNS records for a URL address",
 	Long: `Check the DNS records for a URL address
-	Example:
 	
-	go-webscraper dns
+	EXAMPLE:
 	
-	Could return: `,
+	go-webscraper dns gork.com
+	
+	Could return: 
+	GORK.COM
+	IP addresses:
+	- IPv4: 66.96.149.1
+	MX: mx.gork.com. (Pref: 30)
+	NS Records:
+	- &{ns1.ipage.com.}
+	- &{ns2.ipage.com.}
+	TXT Records:
+	- v=spf1 ip4:66.96.128.0/18 include:websitewelcome.com ?all`,
 
 	Run: dnsCheck,
 }
@@ -69,11 +79,13 @@ func findMX(domain string) {
 	// mail exchange data
 	mx, err := net.LookupMX(domain)
 	if err != nil {
-		fmt.Println("MX: Could not find mail exchange data for", domain, err)
+		fmt.Println("MX: Could not find mail exchange data for", domain, "Error:", err)
 		return
 	}
+
+	fmt.Println("MX Records:")
 	for _, record := range mx {
-		fmt.Printf("MX: %s (Pref: %d)\n", record.Host, record.Pref)
+		fmt.Printf("  - %s (Pref: %d)\n", record.Host, record.Pref)
 	}
 
 }
@@ -82,13 +94,13 @@ func findNS(domain string) {
 	// name server
 	ns, err := net.LookupNS(domain)
 	if err != nil {
-		fmt.Println("NS: Could not find name server data for", domain, err)
+		fmt.Println("NS: Could not find name server data for", domain, "Error:", err)
 		return
 	}
 
 	fmt.Println("NS Records:")
 	for _, record := range ns {
-		fmt.Println("  -", record)
+		fmt.Printf("  - %s\n", record.Host)
 	}
 }
 
@@ -96,7 +108,7 @@ func findTXT(domain string) {
 	// text records
 	txt, err := net.LookupTXT(domain)
 	if err != nil {
-		fmt.Println("TXT: Could not find text records for", domain, err)
+		fmt.Println("TXT: Could not find text records for", domain, "Error:", err)
 		return
 	}
 	fmt.Println("TXT Records:")
