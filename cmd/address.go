@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"math/rand"
+	"net"
 	"strconv"
 
 	"github.com/spf13/cobra"
@@ -45,12 +46,26 @@ func generateAddress(cmd *cobra.Command, args []string) {
 		}
 		newIP += strconv.Itoa(rand.Intn(256))
 
-		fmt.Println(newIP)
+		// May need to rework this to be easier
+		if checkIfPrivateIP(newIP) {
+			fmt.Println(newIP, "[This is a private IP]")
+		} else {
+			fmt.Println(newIP)
+		}
 	}
 }
 
-// large private netwroks: 10.0.0.0 - 10.255.255.255
-
-// medium private networks: 172.16.0.0 – 172.31.255.255
-
-// home routers, LANs: 192.168.0.0 – 192.168.255.255
+// Checks if the IP is private, only made into another function as this could be a utility
+func checkIfPrivateIP(ip string) bool {
+	// Checks these ranges (The most common private ranges)
+	// There are more private ranges than this
+	// large private netwroks: 10.0.0.0 - 10.255.255.255
+	// medium private networks: 172.16.0.0 – 172.31.255.255
+	// home routers, LANs: 192.168.0.0 – 192.168.255.255
+	ipCheck := net.ParseIP(ip)
+	if ipCheck != nil && ipCheck.IsPrivate() {
+		return true
+	} else {
+		return false
+	}
+}
