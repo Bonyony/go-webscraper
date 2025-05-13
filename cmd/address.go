@@ -9,12 +9,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-/*
-	This is an example command just for me to understand how combra works
-	It is not the point of this project
-	But I guess it's an extra little feature leftover!
-*/
-
 var randomAdressCmd = &cobra.Command{
 	Use:   "random",
 	Short: "Generate a random IPv4 Adress",

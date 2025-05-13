@@ -8,12 +8,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-/*
-	This is an example command just for me to understand how combra works
-	It is not the point of this project
-	But I guess it's an extra little feature leftover!
-*/
-
 var dnsCmd = &cobra.Command{
 	Use:   "dns",
 	Short: "Check the DNS records for a URL address",
