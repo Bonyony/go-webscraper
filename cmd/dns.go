@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"crypto/tls"
 	"fmt"
 	"net"
 	"strings"
@@ -49,6 +50,7 @@ func dnsCheck(cmd *cobra.Command, args []string) {
 		findMX(domain)
 		findNS(domain)
 		findTXT(domain)
+		checkSSL(domain)
 	}
 }
 
@@ -109,4 +111,28 @@ func findTXT(domain string) {
 	for _, record := range txt {
 		fmt.Println("  -", record)
 	}
+}
+
+func checkSSL(domain string) {
+
+	conn, err := tls.Dial("tcp", domain, &tls.Config{})
+	if err != nil {
+		fmt.Println("Could not establish a connection with", domain)
+	}
+	defer conn.Close()
+
+	state := conn.ConnectionState()
+
+	fmt.Println("TLS Handshake Complete:", state.HandshakeComplete)
+	fmt.Println("TLS Version:", tls.VersionName(state.Version))
+	fmt.Println("Cipher Suite:", tls.CipherSuiteName(state.CipherSuite))
+
+	// Inspect certificate
+	cert := state.PeerCertificates[0]
+	fmt.Println("Server Name:", cert.Subject.CommonName)
+	fmt.Println("Issuer:", cert.Issuer.CommonName)
+	fmt.Println("Valid From:", cert.NotBefore)
+	fmt.Println("Valid To:", cert.NotAfter)
+	fmt.Println("DNS Names:", cert.DNSNames)
+
 }
